@@ -157,13 +157,16 @@ document.addEventListener('DOMContentLoaded', function()
             const jsonResponse = await response.json();
             console.log(jsonResponse);
 
-            if (jsonResponse.success)
+            if (jsonResponse.body && jsonResponse.body.success)
                 reportSucces();
+            else if (jsonResponse.body)
+                reportError(jsonResponse.body.error);
             else
-                reportError(jsonResponse.error);
+                reportError("Something went wrong");
 
         } catch (error) {
             console.error(error.message);
+            reportError("Script failed");
         }
 
 
@@ -190,7 +193,9 @@ document.addEventListener('DOMContentLoaded', function()
         if (msg == "Invalid token")
             niceMessage = "Your account access token is incorrect. This means you have used a bad link or it has already expired.";
         else if (msg == "Something went wrong")
-            niceMessage = "Something went wrong on server side. Please try again later. If this repeats a few times, please note the time and contact the developer";
+            niceMessage = "Something went wrong on server side. Please try again later. If this repeats a few times, please note the date and time, and contact the developer.";
+        else if (msg == "Script failed")
+            niceMessage = "Something went wrong on this page. Probably the developer messed up, so please report it if you can.";
         else if (msg == "Invalid auth data" || msg == "Invalid request")
             // obviously, this should not happen at all ;-)
             niceMessage = "You ask me, but you don't ask me with respect!";
