@@ -137,18 +137,19 @@ document.addEventListener('DOMContentLoaded', function()
         };
 
         console.log("requesting operation", data);
+        form.classList.add("busy");
 
         try {
-            form.classList.add("busy");
 
             const response = await fetch(endpoint, {
                 method: "POST",
                 body: JSON.stringify(data),
-                headers: { "Content-Type": "application/json"},
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
 
             console.log(response);
-            form.classList.remove("busy");
 
             if (!response.ok) {
                 throw new Error("Could not connect to server. Maybe try again later if you're sure this link is correct.");
@@ -166,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function()
             console.error(error.message);
             reportError("Script failed");
         }
+
+        form.classList.remove("busy");
 
 
         // var formData = JSON.stringify(form.serializeArray());
