@@ -58,6 +58,19 @@
             color: #B74F7A;
             margin: 20px auto 0;
         }
+        #errorLabel.success {
+            color: #077207;
+        }
+        #inButton .spinner {
+            display: none;
+        }
+        .busy #inButton .spinner {
+            display: inline-block;
+            width: 45px;
+        }
+        .busy #inButton span {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +84,10 @@
         </p>
         <input type="password" name="pass" id="inPassword"/>
         <input type="hidden" name="token" id="inToken"/>
-        <input type="submit" id="inButton" value="Update"/>
+        <button type="submit" id="inButton">
+            <img src="spinner.gif" alt="loading" class="spinner"/>
+            <span>Update</span>
+        </button>
         <p id="errorLabel">Oops.. It didn't work well</p>
     </form>
 
@@ -99,16 +115,17 @@ document.addEventListener('DOMContentLoaded', function()
      */
     async function sendForm(e) {
         e.preventDefault();
-        console.log("clicked");
         reportError();
 
         // validate token
         // if (token.length != 32)
         //     return reportError("The security token is corrupted. Is this the link we have sent you? Maybe request password reset once more.");
 
-        // validate password
+        // validate data
+        if (!endpoint || !token || !userId)
+            return reportError("This link seems to be broken. Re-check your email or request a new one.");
         if (passInput.value.length < 6)
-            return reportError("Please make your password at least 6 characters long");
+            return reportError("Please make your password at least 6 characters long.");
 
         const data = {
             "operation": "password-confirm",
@@ -122,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function()
         console.log("requesting operation", data);
 
         try {
+            form.classList.add("busy");
+
             const response = await fetch(endpoint, {
                 method: "POST",
                 body: JSON.stringify(data),
@@ -129,14 +148,19 @@ document.addEventListener('DOMContentLoaded', function()
             });
 
             console.log(response);
+            form.classList.remove("busy");
+
+            if (!response.ok) {
+                throw new Error("Could not connect to server. Maybe try again later if you're sure this link is correct.");
+            }
 
             const jsonResponse = await response.json();
             console.log(jsonResponse);
 
-            if (!response.ok) {
-                throw new Error(`Server responded with ${response.status}`);
-            }
-
+            if (jsonResponse.success)
+                reportSucces();
+            else
+                reportError(jsonResponse.error);
 
         } catch (error) {
             console.error(error.message);
@@ -150,10 +174,28 @@ document.addEventListener('DOMContentLoaded', function()
     }
 
     // update and toggle error message
+    function reportSuccess()
+    {
+        errorMsg.style.display = "block";
+        errorMsg.classList.add("success");
+
+        errorMsg.innerHTML = "Well done! Now proceed to your game.";
+    }
     function reportError(msg)
     {
-        errorMsg.innerHTML = msg;
         errorMsg.style.display = msg ? "block" : "none";
+
+        let niceMessage = msg;
+
+        if (msg == "Invalid token")
+            niceMessage = "Your account access token is incorrect. This means you have used a bad link or it has already expired.";
+        else if (msg == "Something went wrong")
+            niceMessage = "Something went wrong on server side. Please try again later. If this repeats a few times, please note the time and contact the developer";
+        else if (msg == "Invalid auth data" || msg == "Invalid request")
+            // obviously, this should not happen at all ;-)
+            niceMessage = "You ask me, but you don't ask me with respect!";
+
+        errorMsg.innerHTML = niceMessage;
     }
 });
     </script>
