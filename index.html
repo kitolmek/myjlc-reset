@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Password - MyJLC</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <!-- <script src="https://cdn.sstatic.net/Js/stub.en.js?v=44cbb4d4d062"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.sstatic.net/Shared/stacks.css?v=1e9dfb1f6199"> -->
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            padding: 40px;
+            color: #333;
+        }
+        form {
+            background: #eee;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        .badge {
+            display: block;
+            margin: 0 auto 40px;
+            width: 100px;
+        }
+        p {
+            font-family: sans-serif;
+            text-align: center;
+            line-height: 1.25em;
+            margin: 0 0 20px;
+        }
+        #inPassword {
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;
+            height: 2em;
+            padding: 0.5em;
+            font-size: 1.5em;
+            margin: 0 0 20px;
+        }
+        #inButton {
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #ffd57e;
+            width: 100%;
+            box-sizing: border-box;
+            height: 2em;
+            font-size: 1.5em;
+            margin: 0 auto 0;
+            text-align: center;
+            display: block;
+        }
+        #errorLabel {
+            color: #B74F7A;
+            margin: 20px auto 0;
+        }
+    </style>
+</head>
+<body>
+    <form id="inForm">
+        <img src="favicon.png" alt="Lollipop icon" class="badge"/>
+        <p>
+            You requested a password reset for your account.
+        </p>
+        <p>
+            Just enter a new password here
+        </p>
+        <input type="password" name="pass" id="inPassword"/>
+        <input type="hidden" name="token" id="inToken"/>
+        <input type="submit" id="inButton" value="Update"/>
+        <p id="errorLabel">Oops.. It didn't work well</p>
+    </form>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function()
+{
+	const form = document.getElementById('inForm');
+    const passInput = document.getElementById('inPassword');
+	const errorMsg = document.getElementById('errorLabel');
+    errorMsg.style.display = "none";
+
+    // get token from url
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const endpoint = urlParams.get('endpoint');
+    const token = urlParams.get('token');
+    const userId = urlParams.get('id');
+    console.log("inited with", endpoint, token, userId);
+
+
+    form.addEventListener("submit", sendForm);
+
+    /**
+     * Send data function
+     */
+    async function sendForm(e) {
+        e.preventDefault();
+        console.log("clicked");
+        reportError();
+
+        // validate token
+        // if (token.length != 32)
+        //     return reportError("The security token is corrupted. Is this the link we have sent you? Maybe request password reset once more.");
+
+        // validate password
+        if (passInput.value.length < 6)
+            return reportError("Please make your password at least 6 characters long");
+
+        const data = {
+            "operation": "password-confirm",
+            "auth": {
+                "id": userId,
+                "token": token,
+                "pass": passInput.value
+            }
+        };
+
+        console.log("requesting operation", data);
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json"},
+            });
+
+            console.log(response);
+
+            const jsonResponse = await response.json();
+            console.log(jsonResponse);
+
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}`);
+            }
+
+
+        } catch (error) {
+            console.error(error.message);
+        }
+
+
+        // var formData = JSON.stringify(form.serializeArray());
+
+
+        // reportError("Not implemented yet");
+    }
+
+    // update and toggle error message
+    function reportError(msg)
+    {
+        errorMsg.innerHTML = msg;
+        errorMsg.style.display = msg ? "block" : "none";
+    }
+});
+    </script>
+</body>
+</html>
