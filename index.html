@@ -157,12 +157,10 @@ document.addEventListener('DOMContentLoaded', function()
             const jsonResponse = await response.json();
             console.log(jsonResponse);
 
-            if (jsonResponse.body && jsonResponse.body.success)
-                reportSucces();
-            else if (jsonResponse.body)
-                reportError(jsonResponse.body.error);
+            if (jsonResponse.success)
+                reportSuccess();
             else
-                reportError("Something went wrong");
+                reportError(jsonResponse.error);
 
         } catch (error) {
             console.error(error.message);
