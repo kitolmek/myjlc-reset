@@ -117,10 +117,6 @@ document.addEventListener('DOMContentLoaded', function()
         e.preventDefault();
         reportError();
 
-        // validate token
-        // if (token.length != 32)
-        //     return reportError("The security token is corrupted. Is this the link we have sent you? Maybe request password reset once more.");
-
         // validate data
         if (!endpoint || !token || !userId)
             return reportError("This link seems to be broken. Re-check your email or request a new one.");
@@ -169,12 +165,6 @@ document.addEventListener('DOMContentLoaded', function()
         }
 
         form.classList.remove("busy");
-
-
-        // var formData = JSON.stringify(form.serializeArray());
-
-
-        // reportError("Not implemented yet");
     }
 
     // update and toggle error message
@@ -191,6 +181,8 @@ document.addEventListener('DOMContentLoaded', function()
 
         let niceMessage = msg;
 
+        if (msg == "Under construction")
+            niceMessage = "The server is updated right now. Please try again later.";
         if (msg == "Invalid token")
             niceMessage = "Your account access token is incorrect. This means you have used a bad link or it has already expired.";
         else if (msg == "Something went wrong")
